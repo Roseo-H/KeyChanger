@@ -5,6 +5,9 @@
   <!-- viewport-fit=cover: de pagina gebruikt het hele scherm van een iPhone/iPad, de code houdt zelf rekening met de notch en de balk onderaan -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0b5ed7">
+  <meta name="description" content="KeyChanger: zet akkoorden eenvoudig in een andere toonsoort en ontdek welke capo je nodig hebt.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <!-- Zet je de site via "Zet op beginscherm" op je iPhone/iPad of Android, dan opent hij helemaal schermvullend (zonder browserbalk) -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -820,6 +823,32 @@
     @media (prefers-reduced-motion: reduce) {
       body, .bol, .noot, .eq span, .home-logo, .home-tip, .kaart, .bieb { animation: none !important; }
     }
+
+    /* ---------- Android app installeren ---------- */
+    .install-app {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+      transform: translateX(-50%);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      width: max-content;
+      max-width: calc(100vw - 28px);
+      padding: 13px 20px;
+      border: 1px solid rgba(255,255,255,.65);
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(5, 35, 95, .88);
+      box-shadow: 0 10px 30px rgba(0,20,60,.35);
+      font: 700 15px var(--kop);
+      cursor: pointer;
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+    }
+    .install-app.zichtbaar { display: flex; }
+    .install-app:active { scale: .97; }
   </style>
 </head>
 
@@ -954,6 +983,8 @@
     <p class="ondertitel">Zo speel je de akkoorden op gitaar. Lege vakjes met een stippellijn zijn nog niet ingevuld. Tik op het logo om terug te gaan.</p>
     <div id="biebInhoud"></div>
   </section>
+
+  <button class="install-app" id="installApp" type="button">⬇ App installeren</button>
 
   <script>
     // ---------- Toonhoogtes ----------
@@ -1876,6 +1907,38 @@
 
     toon();
     pasPaginaAan();
+
+    // ---------- Installeerbare Android-app (PWA) ----------
+    let uitgesteldeInstallatie = null;
+    const installKnop = document.getElementById("installApp");
+
+    // Bewaar de appbestanden lokaal zodat KeyChanger na de eerste online opening offline werkt.
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js").catch(function (fout) {
+          console.warn("Service worker kon niet worden gestart:", fout);
+        });
+      });
+    }
+
+    window.addEventListener("beforeinstallprompt", function (event) {
+      event.preventDefault();
+      uitgesteldeInstallatie = event;
+      installKnop.classList.add("zichtbaar");
+    });
+
+    installKnop.addEventListener("click", async function () {
+      if (!uitgesteldeInstallatie) return;
+      uitgesteldeInstallatie.prompt();
+      await uitgesteldeInstallatie.userChoice;
+      uitgesteldeInstallatie = null;
+      installKnop.classList.remove("zichtbaar");
+    });
+
+    window.addEventListener("appinstalled", function () {
+      installKnop.classList.remove("zichtbaar");
+      uitgesteldeInstallatie = null;
+    });
   </script>
 </body>
 </html>
