@@ -9,8 +9,11 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="KeyChanger">
   <title>KeyChanger</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icon.svg">
+  <meta name="apple-mobile-web-app-title" content="KeyChanger">
+  <meta name="description" content="Zet akkoorden in een andere toonsoort met KeyChanger.">
 
   <!-- Logo (muzieknoot) in het tabblad van de browser, zit in de code zelf: je hoeft niets te uploaden. -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%230b5ed7'/%3E%3Cstop offset='1' stop-color='%2334d399'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Cellipse cx='25' cy='45' rx='9' ry='7' transform='rotate(-20 25 45)' fill='white'/%3E%3Crect x='31' y='15' width='4.5' height='30' rx='2' fill='white'/%3E%3Cpath d='M35 15 C44 18 49 24 46 34 C45 28 41 25 35 24 Z' fill='white'/%3E%3C/svg%3E">
@@ -148,6 +151,11 @@
       padding: 28px;
       border-radius: 32px;
     }
+
+    .app-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .app-heading h1 { margin-bottom:4px; }
+    .logout-app { flex:none; padding:8px 12px; border:1px solid rgba(255,255,255,.4); border-radius:12px; background:rgba(255,255,255,.16); color:#fff; font:inherit; cursor:pointer; }
+    .logout-app[hidden] { display:none; }
 
     h1 {
       margin: 0 0 4px;
@@ -377,31 +385,43 @@
     }
     @keyframes knipper { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 
-    /* ---------- Knop rechtsboven: volledig scherm aan/uit ---------- */
-    .vol-knop {
+
+    /* ---------- Aparte inlogpagina ---------- */
+    body.login-open { overflow: hidden; min-height: 100vh; min-height: 100dvh; }
+    body.login-open .kaart, body.login-open .merk, body.login-open .bieb,
+    body.login-open .saved-page { display: none !important; }
+    .login-page {
       position: fixed;
-      top: calc(env(safe-area-inset-top, 0px) + 16px);
-      right: calc(env(safe-area-inset-right, 0px) + 16px);
-      z-index: 30;
-      width: 48px;
-      height: 48px;
-      padding: 0;
-      border-radius: 16px;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      transition: background 0.2s, transform 0.15s;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-y: auto;
+      padding: calc(env(safe-area-inset-top, 0px) + 24px) 16px calc(env(safe-area-inset-bottom, 0px) + 24px);
     }
-    .vol-knop[hidden] { display: none; }
-    .vol-knop svg { width: 24px; height: 24px; display: block; }
-    .vol-knop .ico-uit { display: none; }
-    .vol-knop.is-vol .ico-in { display: none; }
-    .vol-knop.is-vol .ico-uit { display: block; }
-    @media (hover: hover) { .vol-knop:hover { background: rgba(255, 255, 255, 0.28); } }
-    .vol-knop:active { transform: scale(0.92); }
-    .vol-knop:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.95); outline-offset: 3px; }
+    .login-page[hidden] { display: none !important; }
+    .login-card {
+      width: min(520px, 100%);
+      padding: clamp(22px, 5vw, 34px);
+      border-radius: 28px;
+      text-align: center;
+    }
+    .login-card h1 { font-size: clamp(27px, 6vw, 38px); }
+    .login-card .ondertitel { margin: 8px 0 24px; }
+    .login-logo {
+      display: block; width: 76px; height: 76px; padding: 0; margin: 0 auto 18px;
+      border: 0; border-radius: 18px; background: none; cursor: pointer;
+      filter: drop-shadow(0 8px 18px rgba(0,20,60,.35));
+    }
+    .login-logo svg { width: 100%; height: 100%; display: block; }
+    .login-page .account-pane { margin: 0; padding: 0; background: transparent; border: 0; box-shadow: none; }
+    .login-page .account-row { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .login-page .account-row input { width: 100%; min-height: 50px; font-size: 16px; }
+    .login-page .account-row button { min-height: 48px; border-radius: 14px; }
+    .login-page .account-status { min-height: 2.8em; line-height: 1.4; overflow-wrap: anywhere; }
+    .login-back-text { margin-top: 16px; border: 0; background: transparent; color: white; font: inherit; cursor: pointer; opacity: .85; }
+    body.start .login-page { display: none; }
 
     /* ---------- Tekstvak met eigen volledig-scherm-knop ---------- */
     .tekstdoos { position: relative; }
@@ -435,13 +455,14 @@
     body.tekst-vol { overflow: hidden; }
     /* Een element met "backdrop-filter" houdt alles daarbinnen vast aan zichzelf: even uit, zodat het tekstvak echt het hele scherm vult */
     body.tekst-vol .kaart { -webkit-backdrop-filter: none; backdrop-filter: none; }
-    body.tekst-vol .merk, body.tekst-vol .vol-knop { visibility: hidden; }
+    body.tekst-vol .merk { visibility: hidden; }
 
     .tekstdoos.vol {
       position: fixed;
       top: 0; right: 0; bottom: 0; left: 0;
       z-index: 100;
       background: #fff;
+      touch-action: pan-y;          /* 1 vinger scrolt, het knijpen (inzoomen) regelen we zelf */
     }
     .tekstdoos.vol textarea {
       position: absolute;
@@ -458,16 +479,27 @@
       border: 0;
       border-radius: 0;
       box-shadow: none;
-      font-size: 20px;
+      touch-action: pan-y;
+      overflow-wrap: anywhere;      /* bij inzoomen gaat de tekst onder elkaar, niets valt buiten beeld */
+      white-space: pre-wrap;
+      font-size: calc(20px * var(--zoom, 1));   /* --zoom gaat van 1 (100%) tot 3 (300%) */
       line-height: 1.6;
       padding:
         calc(env(safe-area-inset-top, 0px) + 22px)
         calc(env(safe-area-inset-right, 0px) + 72px)
-        calc(env(safe-area-inset-bottom, 0px) + 28px)
+        calc(env(safe-area-inset-bottom, 0px) + 96px)
         calc(env(safe-area-inset-left, 0px) + 22px);
     }
     .tekstdoos.vol textarea:focus { box-shadow: none; border: 0; }
     .tekstdoos.vol textarea::placeholder { color: #8a94a6; }
+    /* Potlood uit: de tekst kan niet worden aangeraakt of bewerkt (scrollen en zoomen blijven werken) */
+    .tekstdoos.vol textarea[readonly] {
+      -webkit-user-select: none;
+      user-select: none;
+      caret-color: transparent;
+      cursor: default;
+      -webkit-tap-highlight-color: transparent;
+    }
     .tekstdoos.vol .tekst-vol-knop {
       top: calc(env(safe-area-inset-top, 0px) + 14px);
       right: calc(env(safe-area-inset-right, 0px) + 14px);
@@ -482,6 +514,114 @@
       backdrop-filter: none;
     }
     .tekstdoos.vol .tekst-vol-knop svg { width: 22px; height: 22px; }
+
+    /* ---------- Potlood-knop (alleen in het grote tekstvak, onder de verkleinknop) ---------- */
+    .tekst-bewerk-knop { display: none; }
+    .tekstdoos.vol .tekst-bewerk-knop {
+      display: grid;
+      place-items: center;
+      position: absolute;
+      z-index: 2;
+      top: calc(env(safe-area-inset-top, 0px) + 68px);   /* 14 + 44 (de knop erboven) + 10 ruimte */
+      right: calc(env(safe-area-inset-right, 0px) + 14px);
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border-radius: 12px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      background: #eef2f7;
+      color: #111;
+      border: 1px solid #cfd8e3;
+      box-shadow: none;
+      text-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+      transition: background 0.2s, transform 0.15s, color 0.2s, border-color 0.2s;
+    }
+    .tekstdoos.vol .tekst-bewerk-knop svg { width: 22px; height: 22px; display: block; }
+    .tekstdoos.vol .tekst-bewerk-knop:active { transform: scale(0.92); }
+    .tekstdoos.vol .tekst-bewerk-knop:focus-visible { outline: 3px solid #0b5ed7; outline-offset: 2px; }
+    /* Aan: blauw potlood, zodat je ziet dat je kunt typen */
+    .tekstdoos.vol .tekst-bewerk-knop[aria-pressed="true"] {
+      color: #0b5ed7;
+      border-color: #0b5ed7;
+      background: #e4eefc;
+    }
+
+    /* ---------- Zoom-balk (alleen laptop/computer met muis, onderin het grote tekstvak) ---------- */
+    .zoom-balk { display: none; }
+    @media (hover: hover) and (pointer: fine) {
+      .tekstdoos.vol .zoom-balk {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);
+        width: min(440px, calc(100% - 170px));
+        padding: 10px 20px;
+        border-radius: 22px;
+        font-family: var(--kop);
+        font-weight: 800;
+        font-size: 14px;
+        color: #0a2a6b;
+        /* liquid glass dat ook op wit goed te zien is */
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.38), rgba(52, 211, 153, 0.38));
+        -webkit-backdrop-filter: blur(18px) saturate(170%);
+        backdrop-filter: blur(18px) saturate(170%);
+        border: 1px solid rgba(255, 255, 255, 0.85);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 28px rgba(10, 42, 107, 0.22);
+      }
+    }
+    .zoom-balk input[type="range"] { flex: 1; min-width: 0; accent-color: #0b5ed7; cursor: pointer; }
+    .zoom-balk span { flex: none; min-width: 3.2em; text-align: center; }
+
+    /* ---------- Kopieer-knop: onder het tekstvak, en rechtsonder in het grote tekstvak ---------- */
+    .kopieer-knop {
+      width: 100%;
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .kopieer-knop svg { width: 22px; height: 22px; display: block; }
+    .kopieer-knop .ico-ok { display: none; }
+    .kopieer-knop.gelukt .ico-kopie { display: none; }
+    .kopieer-knop.gelukt .ico-ok { display: block; }
+    @media (hover: hover) { .kopieer-knop:hover { background: rgba(255, 255, 255, 0.28); } }
+    .kopieer-knop:active { transform: scale(0.97); }
+    .kopieer-knop:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.95); outline-offset: 3px; }
+
+    .tekstdoos.vol .tekst-acties { display:contents; }
+    .tekstdoos.vol .kopieer-knop {
+      position: absolute;
+      z-index: 2;
+      width: 44px;
+      height: 44px;
+      margin: 0;
+      padding: 0;
+      border-radius: 12px;
+      right: calc(env(safe-area-inset-right, 0px) + 14px);
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 14px);
+      background: #eef2f7;
+      color: #111;
+      border: 1px solid #cfd8e3;
+      box-shadow: none;
+      text-shadow: none;
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+    .tekstdoos.vol .kopieer-knop.gelukt { color: #0a8f5a; }
 
     /* ---------- Shorter-schakelaar naast Oké ---------- */
     .acties { display: flex; gap: 12px; margin-top: 24px; align-items: stretch; }
@@ -552,21 +692,83 @@
       transition: opacity 0.3s, transform 0.3s;
     }
     .melding.zichtbaar { opacity: 1; transform: translate(-50%, 0); }
-.kopieer-knop{
-  width:100%;
-  margin-top:10px;
-  padding:12px;
-  border-radius:16px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  cursor:pointer;
-}
 
-.kopieer-knop svg{
-  width:22px;
-  height:22px;
-}
+    /* ---------- Knop naar de akkoordenbibliotheek ---------- */
+    .bieb-knop {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 14px;
+      min-height: 52px;
+      padding: 12px 18px;
+      border-radius: 24px;
+      font-family: var(--kop);
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .bieb-knop svg { width: 22px; height: 22px; display: block; flex: none; }
+    @media (hover: hover) { .bieb-knop:hover { background: rgba(255, 255, 255, 0.28); } }
+    .bieb-knop:active { transform: scale(0.97); }
+    .bieb-knop:focus-visible { outline: 3px solid rgba(255, 255, 255, 0.95); outline-offset: 3px; }
+
+    /* ---------- Akkoordenbibliotheek (tweede pagina) ---------- */
+    .bieb { display: none; position: relative; z-index: 1; width: min(1100px, 100%); }
+    body.bieb-open .kaart { display: none; }
+    body.bieb-open .bieb { display: block; animation: verschijn 0.6s ease backwards; }
+    body.start .bieb { display: none !important; }
+    /* Het logo blijft links boven staan, ook als je naar beneden scrolt */
+    body.bieb-open .merk { position: fixed; }
+
+    .bieb h1 { text-shadow: 0 4px 24px rgba(0, 20, 60, 0.4); }
+    .bieb .ondertitel { text-shadow: 0 1px 6px rgba(0, 20, 60, 0.35); max-width: 640px; }
+
+    .ak-titel {
+      margin: 34px 0 14px;
+      font-family: var(--kop);
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: 0.3px;
+      text-shadow: 0 2px 10px rgba(0, 20, 60, 0.4);
+    }
+
+    /* Dezelfde vakjes als de toonhoogte-wielen: 160 x 156 (telefoon 132 hoog, tablet 170 x 168) */
+    .ak-rij {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, 160px);
+      gap: clamp(10px, 3vw, 22px);
+      justify-content: center;
+    }
+
+    /* Liquid glass zonder "backdrop-filter": met 200+ vakjes zou de blur een telefoon te zwaar maken.
+       Op deze zachte achtergrond zie je het verschil bijna niet. */
+    .akkoord-blok {
+      height: 156px;
+      border-radius: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 8px 8px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.6),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+        0 10px 24px rgba(0, 20, 60, 0.25);
+      color: #fff;
+      text-shadow: 0 1px 4px rgba(0, 20, 60, 0.35);
+    }
+    .akkoord-blok.leeg { background: rgba(255, 255, 255, 0.08); border-style: dashed; }
+    .ak-naam { font-family: var(--kop); font-weight: 800; font-size: 20px; line-height: 1.15; }
+    .ak-alt  { font-size: 12px; line-height: 1.2; min-height: 1.2em; opacity: 0.7; }
+    .akkoord-blok svg { flex: 1; min-height: 0; width: 100%; display: block; margin-top: 2px; }
+
     /* ---------- Telefoon (smal scherm) ---------- */
     @media (max-width: 520px) {
       body {
@@ -577,7 +779,7 @@
           calc(env(safe-area-inset-left, 0px) + 12px);
       }
       .merk {
-  top: calc(env(safe-area-inset-top, 0px) + 28px);
+        top: calc(env(safe-area-inset-top, 0px) + 28px);
         left: calc(env(safe-area-inset-left, 0px) + 12px);
         width: 48px;
         height: 48px;
@@ -610,6 +812,12 @@
       .schakel-spoor { width: 40px; height: 24px; }
       .schakel-bol { width: 18px; height: 18px; }
       .schakel[aria-checked="true"] .schakel-bol { transform: translateX(16px); }
+
+      .bieb-knop { margin-top: 12px; font-size: 15px; }
+      .ak-rij { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .akkoord-blok { height: 132px; border-radius: 26px; padding: 8px 6px 6px; }
+      .ak-naam { font-size: 17px; }
+      .ak-titel { font-size: 18px; }
     }
 
     /* ---------- Tablet / iPad ---------- */
@@ -617,6 +825,9 @@
       .kaart { width: min(720px, 100%); padding: 36px; }
       textarea { height: 210px; font-size: 18px; }
       .wiel { max-width: 170px; height: 168px; }
+
+      .ak-rij { grid-template-columns: repeat(auto-fill, 170px); }
+      .akkoord-blok { height: 168px; }
     }
 
     /* ---------- Telefoon of tablet liggend (weinig hoogte) ---------- */
@@ -628,8 +839,36 @@
     }
 
     @media (prefers-reduced-motion: reduce) {
-      body, .bol, .noot, .eq span, .home-logo, .home-tip, .kaart { animation: none !important; }
+      body, .bol, .noot, .eq span, .home-logo, .home-tip, .kaart, .bieb { animation: none !important; }
     }
+
+    /* ---------- Accounts en opgeslagen teksten ---------- */
+    .account-pane { margin: 0 0 18px; padding: 14px; border-radius: 20px; }
+    .account-row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .account-row input { flex:1 1 150px; min-width:0; padding:11px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.45); background:rgba(255,255,255,.16); color:#fff; font: inherit; }
+    .account-row input::placeholder { color:rgba(255,255,255,.75); }
+    .account-row button, .saved-card button, .save-knop { border:1px solid rgba(255,255,255,.4); color:#fff; background:rgba(255,255,255,.16); font:inherit; font-weight:600; cursor:pointer; }
+    .account-row button { padding:10px 14px; border-radius:12px; }
+    .account-status { margin:8px 0 0; font-size:13px; opacity:.9; }
+    .tekst-acties { display:flex; gap:10px; margin-top:10px; }
+    .tekst-acties .kopieer-knop, .tekst-acties .save-knop { flex:1; width:50%; margin-top:0; min-height:48px; }
+    .save-knop { display:flex; align-items:center; justify-content:center; border-radius:16px; padding:12px; }
+    .save-knop svg { width:22px; height:22px; }
+    .tekstdoos.vol .save-knop { position:absolute; z-index:2; width:44px; height:44px; min-height:44px; padding:0; right:calc(env(safe-area-inset-right, 0px) + 68px); bottom:calc(env(safe-area-inset-bottom, 0px) + 14px); border-radius:12px; background:#eef2f7; color:#111; border:1px solid #cfd8e3; }
+    .saved-page { display:none; position:relative; z-index:1; width:min(900px,100%); }
+    body.saved-open .kaart, body.saved-open .bieb { display:none !important; }
+    body.saved-open .saved-page { display:block; animation:verschijn .5s ease backwards; }
+    body.saved-open .merk { position:fixed; }
+    .saved-page h1 { text-shadow:0 4px 24px rgba(0,20,60,.4); }
+    .saved-list { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; margin-top:22px; }
+    .saved-card { padding:18px; border-radius:20px; min-width:0; }
+    .saved-card h3 { margin:0 0 8px; font-family:var(--kop); overflow-wrap:anywhere; }
+    .saved-card p { white-space:pre-wrap; overflow-wrap:anywhere; max-height:110px; overflow:hidden; font-size:14px; opacity:.9; }
+    .saved-card .saved-actions { display:flex; gap:8px; }
+    .saved-card button { padding:9px 12px; border-radius:12px; }
+    .saved-empty { text-align:center; opacity:.9; padding:28px 12px; }
+    @media(max-width:520px) { .account-row button { flex:1; } }
+
   </style>
 </head>
 
@@ -640,7 +879,7 @@
   <div class="bol drie"></div>
   <div class="noten-regen" id="noten-regen" aria-hidden="true"></div>
 
-  <!-- Startscherm: groot logo met de naam. Klik op het logo om naar de site te gaan -->
+  <!-- Startscherm: groot logo met de naam. Klik op het logo om naar de aparte inlogpagina te gaan -->
   <section class="home" id="home" aria-label="Startscherm">
     <button class="home-logo" id="startLogo" type="button" aria-label="Start KeyChanger">
       <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -660,15 +899,41 @@
     <p class="home-tip">Tik op het logo om te beginnen</p>
   </section>
 
-  <!-- Volledig scherm aan/uit (rechtsboven). Verschijnt alleen als de browser dit toestaat -->
-  <button class="vol-knop glass" id="volKnop" type="button" aria-label="Volledig scherm" title="Volledig scherm" hidden>
-    <svg class="ico-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
-    <svg class="ico-uit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3a2 2 0 0 0 2-2V3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M21 16h-3a2 2 0 0 0-2 2v3"/></svg>
-  </button>
+  <!-- Aparte inlogpagina: verschijnt pas na een tik op het startlogo -->
+  <section class="login-page" id="loginPage" aria-label="Inloggen bij KeyChanger" hidden>
+    <div class="login-card glass">
+      <button class="login-logo" type="button" id="loginBack" aria-label="Terug naar startscherm">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs><linearGradient id="login-logo-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0b5ed7"/><stop offset="1" stop-color="#34d399"/></linearGradient></defs>
+          <rect width="64" height="64" rx="16" fill="url(#login-logo-g)"/>
+          <ellipse cx="25" cy="45" rx="9" ry="7" transform="rotate(-20 25 45)" fill="#fff"/>
+          <rect x="31" y="15" width="4.5" height="30" rx="2" fill="#fff"/>
+          <path d="M35 15 C44 18 49 24 46 34 C45 28 41 25 35 24 Z" fill="#fff"/>
+        </svg>
+      </button>
+      <h1>Welkom bij KeyChanger</h1>
+      <p class="ondertitel">Log in of maak een account om verder te gaan.</p>
+    <section class="account-pane glass" aria-label="Account">
+      <div class="account-row" id="authForm">
+        <input id="authEmail" type="email" autocomplete="email" placeholder="E-mailadres" aria-label="E-mailadres">
+        <input id="authPassword" type="password" autocomplete="current-password" placeholder="Wachtwoord" aria-label="Wachtwoord">
+        <button type="button" id="signInBtn">Inloggen</button>
+        <button type="button" id="signUpBtn">Account maken</button>
+      </div>
+      <div class="account-row" id="signedIn" hidden>
+        <span id="userEmail" style="flex:1;overflow-wrap:anywhere"></span>
+        <button type="button" id="signOutBtn">Uitloggen</button>
+      </div>
+      <p class="account-status" id="authStatus">Log in om je teksten online op te slaan op al je apparaten.</p>
+      <button class="login-back-text" id="loginBackText" type="button">Terug naar startscherm</button>
+  </section>
+    </div>
+  </section>
+
 
   <div class="melding glass" id="melding" role="status" aria-live="polite"></div>
 
-  <!-- Logo links boven: klik erop om alles terug te zetten -->
+  <!-- Logo links boven: op de gewone pagina zet je er alles mee terug, in de bibliotheek ga je ermee terug naar de gewone pagina -->
   <a class="merk" id="logo" href="./" aria-label="KeyChanger, alles terugzetten" title="Alles terugzetten">
     <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <defs>
@@ -685,42 +950,48 @@
   </a>
 
   <main class="kaart glass">
-    <h1>KeyChanger</h1>
+    <div class="app-heading">
+      <h1>KeyChanger</h1>
+      <button class="logout-app" id="logoutAppBtn" type="button" hidden>Uitloggen</button>
+    </div>
     <p class="ondertitel">Zet je akkoorden in een andere toonsoort en zie meteen welke capo je nodig hebt.</p>
+
+
 
     <div class="eq" id="eq" aria-hidden="true"></div>
 
     <div class="tekstdoos" id="tekstdoos">
       <textarea id="tekst" class="glass" spellcheck="false" autocomplete="off" placeholder="Typ of plak hier je akkoorden of songtekst..."></textarea>
+
+      <!-- Kopiëren en opslaan staan naast elkaar onder het tekstvak -->
+      <div class="tekst-acties">
+      <button class="kopieer-knop glass" id="kopieerKnop" type="button" aria-label="Alle tekst kopiëren" title="Alle tekst kopiëren">
+        <svg class="ico-kopie" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><rect x="4" y="4" width="11" height="11" rx="2"></rect></svg>
+        <svg class="ico-ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+      </button>
+      <button class="save-knop glass" id="saveTextBtn" type="button" aria-label="Tekst opslaan" title="Tekst opslaan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+      </button>
+      </div>
       <button class="tekst-vol-knop glass" id="tekstVol" type="button" aria-label="Tekstvak over het hele scherm" title="Tekstvak over het hele scherm">
         <svg class="ico-in" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
         <svg class="ico-uit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h3a2 2 0 0 0 2-2V3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M21 16h-3a2 2 0 0 0-2 2v3"/></svg>
       </button>
-   </div>
 
-<button
-  class="kopieer-knop glass"
-  id="kopieerKnop"
-  type="button"
-  aria-label="Kopieer tekst">
+      <!-- Potlood: alleen zichtbaar in het grote tekstvak. Aan = typen kan, uit = tekst is vergrendeld -->
+      <button class="tekst-bewerk-knop glass" id="tekstBewerk" type="button" aria-pressed="false" aria-label="Tekst bewerken" title="Tekst bewerken">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      </button>
 
-  <svg viewBox="0 0 24 24"
-       fill="none"
-       stroke="currentColor"
-       stroke-width="2"
-       stroke-linecap="round"
-       stroke-linejoin="round"
-       width="22"
-       height="22">
+      <!-- Zoom-balk voor laptop of computer: links 100%, rechts 300% -->
+      <div class="zoom-balk" id="zoomBalk">
+        <span>100%</span>
+        <input type="range" id="zoomSchuif" min="100" max="300" step="5" value="100" aria-label="Inzoomen op de tekst" aria-valuetext="100%">
+        <span>300%</span>
+      </div>
+    </div>
 
-    <rect x="9" y="9" width="11" height="11" rx="2"></rect>
-    <rect x="4" y="4" width="11" height="11" rx="2"></rect>
-
-  </svg>
-
-</button>
-
-<div class="keuzes">
+    <div class="keuzes">
       <div class="toonhoogte">
         <span class="label">Originele toonhoogte</span>
         <div class="wiel glass" id="wiel-orig" tabindex="0" role="slider" aria-label="Originele toonhoogte" aria-valuemin="0" aria-valuemax="11">
@@ -753,15 +1024,43 @@
       <button class="oke glass" id="oke" type="button">Oké</button>
     </div>
 
+    <button class="bieb-knop glass" id="biebKnop" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+      <span>Akkoordenbibliotheek</span>
+    </button>
+    <button class="bieb-knop glass" id="savedPageBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v18H6.5A2.5 2.5 0 0 1 4 18.5z"/><path d="M4 5.5v13M8 7h8M8 11h8"/></svg>
+      <span>Opgeslagen teksten</span>
+    </button>
+
     <p class="tip">Sleep of veeg met je vinger of muis omhoog en omlaag over een letter om de toonhoogte te kiezen (het muiswiel werkt ook). Druk daarna op Oké. Met Shorter houd je alleen de gewone akkoorden over.</p>
   </main>
 
+  <!-- Tweede pagina: de akkoordenbibliotheek. Wordt pas gevuld als je erop klikt -->
+  <section class="bieb" id="bieb" aria-label="Akkoordenbibliotheek">
+    <h1>Akkoordenbibliotheek</h1>
+    <p class="ondertitel">Zo speel je de akkoorden op gitaar. Lege vakjes met een stippellijn zijn nog niet ingevuld. Tik op het logo om terug te gaan.</p>
+    <div id="biebInhoud"></div>
+  </section>
+
+  <section class="saved-page" id="savedPage" aria-label="Opgeslagen teksten">
+    <h1>Opgeslagen teksten</h1>
+    <p class="ondertitel">Al je bewaarde akkoorden en songteksten op één plek.</p>
+    <div class="saved-list" id="savedList"><p class="saved-empty">Je opgeslagen teksten verschijnen hier.</p></div>
+  </section>
+
+  <!-- Supabase verzorgt accounts en de online database. Vul je eigen projectgegevens hieronder in. -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     // ---------- Toonhoogtes ----------
     // Alle toonhoogtes in volgorde: C, C#, D, D#, E, F, F#, G, G#, A, A#, B
-    const noten = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const noten = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"],
+          // Dezelfde toonhoogtes, maar met mollen. Handig in toonsoorten als F (Bb) of Eb
+          notenBes = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
     // Waar elke letter staat in die lijst
     const basis = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+    // Toonsoorten waarin je gewoonlijk mollen schrijft: Db, Eb, F, Ab, Bb
+    const BES_TOONSOORTEN = [1, 3, 5, 8, 10];
 
     const tekstvak = document.getElementById("tekst");
     const capoEl = document.getElementById("capo");
@@ -771,10 +1070,13 @@
     // Positie in de lijst (0 = C ... 11 = B)
     const stand = { orig: 0, nieuw: 0 };
 
-    // Hoeveel stappen de tekst al is opgeschoven (zodat een tweede keer Oké niet dubbel schuift)
+    // Zolang je de nieuwe toonhoogte nog niet zelf hebt gekozen, loopt hij mee met de originele.
+    // Zo gebeurt er niets met je tekst als je alleen de originele toonhoogte instelt.
+    let nieuwGekozen = false;
+
+    // Hoeveel halve tonen de tekst al is opgeschoven ten opzichte van wat je typte of plakte
+    // (zodat een tweede keer Oké niet dubbel schuift)
     let toegepast = 0;
-    let vorigeOrig = 0;
-let vorigeNieuw = 0;
 
     // Shorter: staat de schakelaar aan, dan onthouden we de volledige akkoorden (om terug te kunnen zetten)
     // en de ingekorte tekst die we er zelf van gemaakt hebben
@@ -786,17 +1088,22 @@ let vorigeNieuw = 0;
     //   1: wat ervoor staat   2: letter A-G (hoofdletter of kleine letter)   3: # of b
     //   4: alles achter het akkoord (m, 7, maj7, sus4, add9, dim, aug, m7b5, 7(b9), ...)
     //   5+6: de basnoot na een schuine streep (C/G)
-  function akkoordPatroon() {
-  return /(^|[^A-Za-z0-9#'’_])([A-Ga-g])([#b]?)((?:(?:maj|min|dim|aug|sus|add|m|\d|[#b](?=\d)|[+°ø])*)(?:\([^()\s]{1,8}\))?)(?:\/([A-Ga-g])([#b]?))?(?![A-Za-z0-9#'’_]|-[a-z]{3,})/g;
-}
-     
+    function akkoordPatroon() {
+      return /(^|[^A-Za-z0-9#'’_])([A-Ga-g])([#b]?)((?:(?:maj|min|dim|aug|sus|add|m|\d|[#b](?=\d)|[+°ø])*)(?:\([^()\s]{1,8}\))?)(?:\/([A-Ga-g])([#b]?))?(?![A-Za-z0-9#'’_]|-[a-z]{3,})/g;
+    }
 
     // Zoekt alle losse akkoorden in de tekst, met een hoofdletter of een kleine letter
     // (A, a, Dm, dm, G7, C#, f#, Bb, C/G, c/g) en schuift ze op.
-    // Positief = omhoog, negatief = omlaag.
+    // Positief = omhoog, negatief = omlaag. Voorbeeld: stappen = -2 -> D wordt C, G wordt F, Em wordt Dm.
     // Letters die in een woord zitten ("Dit", "Ben", "de", "e-mail") blijven met rust:
     // een akkoord moet los staan, dus voor en na het akkoord mag geen letter of cijfer staan.
-    function transponeer(tekst, stappen) {
+    //
+    // metBes: schrijf de nieuwe akkoorden met mollen (Bb) in plaats van kruisen (A#).
+    // Stond er in jouw tekst al een # of een b, dan blijft die soort staan.
+    //
+    // Staan er na het akkoord meerdere spaties (akkoorden boven een songtekst), dan wordt de ruimte
+    // aangepast als het akkoord langer of korter wordt, zodat de tekst eronder netjes uitgelijnd blijft.
+    function transponeer(tekst, stappen, metBes) {
       const s = ((stappen % 12) + 12) % 12;
       if (s === 0) return tekst;
 
@@ -806,64 +1113,70 @@ let vorigeNieuw = 0;
       function verschuif(letter, teken) {
         const isHoofdletter = letter === letter.toUpperCase();
         const plek = basis[letter.toUpperCase()] + (teken === "#" ? 1 : teken === "b" ? -1 : 0);
-        const nieuw = noten[(((plek + s) % 12) + 12) % 12];
-        return isHoofdletter ? nieuw : nieuw.toLowerCase();
+        const nummer = (((plek + s) % 12) + 12) % 12;
+        const bes = teken === "b" ? true : teken === "#" ? false : !!metBes;
+        const naam = (bes ? notenBes : noten)[nummer];
+        return isHoofdletter ? naam : naam.toLowerCase();
       }
 
-      return tekst.replace(patroon, function (_, voor, letter, teken, uitbreiding, bas, basTeken) {
-        let uit = voor + verschuif(letter, teken) + uitbreiding;
-        if (bas) uit += "/" + verschuif(bas, basTeken);
-        return uit;
-      });
+      let uit = "";
+      let pos = 0;           // tot hier is de oorspronkelijke tekst al verwerkt
+      let m;
+      while ((m = patroon.exec(tekst)) !== null) {
+        const heel = m[0], voor = m[1], letter = m[2], teken = m[3], uitbreiding = m[4], bas = m[5], basTeken = m[6];
+        let nieuwAkkoord = verschuif(letter, teken) + uitbreiding;
+        if (bas) nieuwAkkoord += "/" + verschuif(bas, basTeken);
+        const oudAkkoord = heel.slice(voor.length);
+        const eind = m.index + heel.length;
+
+        uit += tekst.slice(pos, m.index) + voor + nieuwAkkoord;
+        pos = eind;
+
+        // Uitlijning bewaren: tel de spaties direct na het akkoord
+        const verschil = nieuwAkkoord.length - oudAkkoord.length;
+        if (verschil !== 0) {
+          let spaties = 0;
+          while (tekst.charAt(eind + spaties) === " ") spaties++;
+          if (verschil > 0) {
+            // langer akkoord: haal spaties weg, maar laat er minstens één staan
+            pos = eind + Math.min(verschil, Math.max(spaties - 1, 0));
+          } else if (spaties > 0) {
+            // korter akkoord: vul aan met spaties
+            uit += " ".repeat(-verschil);
+          }
+        }
+      }
+      return uit + tekst.slice(pos);
     }
 
     // Shorter: haalt alles naast het akkoord weg. Dus Cmaj7 -> C, G7 -> G, Dsus4 -> D, Cadd9 -> C,
     // Am7b5 -> Am en C/G -> C (de basnoot na de schuine streep gaat ook weg).
     // Een kleine "m" (mineur) blijft staan, want Am en A zijn twee verschillende akkoorden.
-   function verkort(tekst) {
-  return tekst.replace(
-    akkoordPatroon(),
-    function (_, voor, letter, teken, uitbreiding) {
-
-      const mineur =
-        /^m(?!aj)/.test(uitbreiding)
-          ? "m"
-          : "";
-
-      const kort = letter + teken + mineur;
-
-      const origineleLengte =
-        (letter + teken + uitbreiding).length;
-
-      return (
-        voor +
-        kort.padEnd(origineleLengte, " ")
-      );
+    // Het weggehaalde stuk wordt met spaties opgevuld, zodat de rest van de regel niet opschuift.
+    function verkort(tekst) {
+      return tekst.replace(akkoordPatroon(), function (_, voor, letter, teken, uitbreiding) {
+        const mineur = /^m(?!aj)/.test(uitbreiding) ? "m" : "";
+        const kort = letter + teken + mineur;
+        const origineleLengte = (letter + teken + uitbreiding).length;
+        return voor + kort.padEnd(origineleLengte, " ");
+      });
     }
-  );
-}
 
-    // Capo: nieuwe toonhoogte hoger dan origineel -> 1, 2, 3, ...
-    //       gelijk -> 0
-    //       lager  -> 11, 10, 9, ...
- function berekenCapo() {
+    // Capo: gelijk -> 0
+    //       nieuwe toonhoogte hoger -> 12 min het verschil
+    //       nieuwe toonhoogte lager -> het verschil
+    function berekenCapo() {
+      const verschil = stand.nieuw - stand.orig;
+      if (verschil === 0) return 0;
+      if (verschil > 0) return 12 - verschil;
+      return Math.abs(verschil);
+    }
 
-  let verschil = stand.nieuw - stand.orig;
-
-  if (verschil === 0) return 0;
-
-  if (verschil > 0) {
-    return 12 - verschil;
-  }
-
-  return Math.abs(verschil);
-}
-
-    // Is de nieuwe toonhoogte hoger? Dan gaan de akkoorden omlaag (en andersom).
-  function gewensteVerschuiving() {
-  return stand.nieuw - stand.orig;
-}
-  
+    // Hoeveel halve tonen de akkoorden opschuiven: precies het verschil tussen nieuw en origineel.
+    // Orig G (7) en nieuw F (5): 5 - 7 = -2, dus alle akkoorden twee halve tonen omlaag (D wordt C).
+    function gewensteVerschuiving() {
+      return stand.nieuw - stand.orig;
+    }
 
     // Laat de letters en de capo zien
     function toon() {
@@ -883,6 +1196,11 @@ let vorigeNieuw = 0;
       const w = Math.min(11, Math.max(0, waarde));
       if (w === stand[wie]) return;
       stand[wie] = w;
+      if (wie === "nieuw") {
+        nieuwGekozen = true;
+      } else if (!nieuwGekozen) {
+        stand.nieuw = w;          // de nieuwe toonhoogte loopt mee, het verschil blijft 0
+      }
       toon();
       pulseer();
       if (navigator.vibrate) navigator.vibrate(8);
@@ -944,25 +1262,18 @@ let vorigeNieuw = 0;
     maakWiel(document.getElementById("wiel-nieuw"), "nieuw");
 
     // ---------- Tekst aanpassen: pas na het langsvliegen van het logo ----------
- function pasTekstAan() {
-
-  // Alleen origineel veranderd?
-  if (
-    stand.orig !== vorigeOrig &&
-    stand.nieuw === vorigeNieuw
-  ) {
-    vorigeOrig = stand.orig;
-    vorigeNieuw = stand.nieuw;
-    return;
-  }
+    // De tekst wordt altijd verschoven met het verschil tussen nieuw en origineel.
+    // "toegepast" houdt bij hoeveel de tekst al is verschoven, dus tweemaal op Oké doet niets extra's.
+    function pasTekstAan() {
       const gewenst = gewensteVerschuiving();
       const stappen = gewenst - toegepast;
+      const metBes = BES_TOONSOORTEN.indexOf(stand.nieuw) !== -1;
       // Heb je de ingekorte tekst zelf niet aangepast? Dan schuiven we de volledige versie mee, zodat Shorter uit nog klopt
       const ongewijzigd = shorter && volleTekst !== null && tekstvak.value === verkortTekst;
-      let nieuw = transponeer(tekstvak.value, stappen);
+      let nieuw = transponeer(tekstvak.value, stappen, metBes);
       if (shorter) {
         if (ongewijzigd) {
-          volleTekst = transponeer(volleTekst, stappen);
+          volleTekst = transponeer(volleTekst, stappen, metBes);
         } else {
           nieuw = verkort(nieuw);        // zelf getypte of geplakte akkoorden ook inkorten
           volleTekst = null;
@@ -971,14 +1282,13 @@ let vorigeNieuw = 0;
       }
       tekstvak.value = nieuw;
       toegepast = gewenst;
-   vorigeOrig = stand.orig;
-vorigeNieuw = stand.nieuw;
       tekstvak.classList.remove("verlicht");
       void tekstvak.offsetWidth;
       tekstvak.classList.add("verlicht");
     }
 
-    // Plak je een nieuwe tekst over de oude heen (of begin je opnieuw), dan telt die weer als origineel
+    // Plak je een nieuwe tekst over de oude heen (of maak je het tekstvak leeg), dan telt die weer als origineel:
+    // de akkoorden die je plakt staan in de originele toonhoogte en zijn dus nog niet opgeschoven
     tekstvak.addEventListener("paste", function () {
       if (tekstvak.selectionStart === 0 && tekstvak.selectionEnd === tekstvak.value.length) {
         toegepast = 0;
@@ -1059,12 +1369,22 @@ vorigeNieuw = stand.nieuw;
       };
     }
 
-    // ---------- Klik op het logo: alles terug naar het begin ----------
+    // ---------- Klik op het logo ----------
+    // In de bibliotheek: terug naar de gewone pagina. Op de gewone pagina: alles terug naar het begin.
     logo.addEventListener("click", function (e) {
       e.preventDefault();
+      if (document.body.classList.contains("bieb-open")) {
+        sluitBieb();
+        return;
+      }
+      if (document.body.classList.contains("saved-open")) {
+        location.hash = "";
+        return;
+      }
       if (vliegt) return;
       stand.orig = 0;
       stand.nieuw = 0;
+      nieuwGekozen = false;
       toegepast = 0;
       resetShorter();
       tekstvak.value = "";
@@ -1156,62 +1476,11 @@ vorigeNieuw = stand.nieuw;
       pulseer();
     });
 
-    // ---------- Startscherm ----------
-    const home = document.getElementById("home");
-    document.getElementById("startLogo").addEventListener("click", function () {
-      if (!document.body.classList.contains("start")) return;
-      home.classList.add("weg");
-      document.body.classList.remove("start");
-      setTimeout(function () { home.hidden = true; }, 520);
-    });
-
-    // ---------- Volledig scherm (hele pagina, knop rechtsboven) ----------
-    const volKnop = document.getElementById("volKnop");
-    const wortel = document.documentElement;
-    const vraagFs = wortel.requestFullscreen || wortel.webkitRequestFullscreen;
-    const fsToegestaan = document.fullscreenEnabled !== undefined ? document.fullscreenEnabled : document.webkitFullscreenEnabled;
-    // iPhone-Safari laat websites niet schermvullend gaan: daar blijft de knop weg
-    // (via "Zet op beginscherm" opent de site wel schermvullend)
-    const fsMogelijk = !!vraagFs && fsToegestaan !== false;
-    volKnop.hidden = !fsMogelijk;
-
-    function fsElement() {
-      return document.fullscreenElement || document.webkitFullscreenElement || null;
-    }
-
-    function gaFs(bijFout) {
-      try {
-        const p = vraagFs.call(wortel);
-        if (p && p.catch) p.catch(function () { if (bijFout) bijFout(); });
-      } catch (fout) {
-        if (bijFout) bijFout();
-      }
-    }
-
-    function verlaatFs() {
-      const uit = document.exitFullscreen || document.webkitExitFullscreen;
-      if (!uit) return;
-      try {
-        const p = uit.call(document);
-        if (p && p.catch) p.catch(function () {});
-      } catch (fout) { /* niet erg */ }
-    }
-
-    function updateFsKnop() {
-      const aan = !!fsElement();
-      volKnop.classList.toggle("is-vol", aan);
-      const tekst = aan ? "Volledig scherm verlaten" : "Volledig scherm";
-      volKnop.setAttribute("aria-label", tekst);
-      volKnop.title = tekst;
-    }
-
-    volKnop.addEventListener("click", function () {
-      if (fsElement()) verlaatFs(); else gaFs();
-    });
-
     // ---------- Tekstvak over het hele scherm (wit met zwarte letters) ----------
     const tekstdoos = document.getElementById("tekstdoos");
     const tekstVolKnop = document.getElementById("tekstVol");
+    const bewerkKnop = document.getElementById("tekstBewerk");
+    const zoomSchuif = document.getElementById("zoomSchuif");
     let tekstFsZelf = false;     // klopt als wij het volledige scherm hebben aangezet (en dus ook weer uit mogen zetten)
 
     function tekstVolOpen() {
@@ -1230,11 +1499,101 @@ vorigeNieuw = stand.nieuw;
       window.visualViewport.addEventListener("scroll", pasTekstHoogte);
     }
 
+    // ---------- Potlood: tekst bewerken aan/uit ----------
+    function zetBewerken(aan) {
+      tekstvak.readOnly = !aan;
+      bewerkKnop.setAttribute("aria-pressed", aan ? "true" : "false");
+      const tekst = aan ? "Tekst vergrendelen (niet meer bewerken)" : "Tekst bewerken";
+      bewerkKnop.setAttribute("aria-label", tekst);
+      bewerkKnop.title = tekst;
+      if (aan) {
+        try { tekstvak.focus({ preventScroll: true }); } catch (fout) { tekstvak.focus(); }
+      } else {
+        tekstvak.blur();           // haalt ook het toetsenbord weg
+      }
+    }
+    bewerkKnop.addEventListener("click", function () {
+      zetBewerken(tekstvak.readOnly);     // staat hij vast? dan open zetten, anders vergrendelen
+    });
+
+    // ---------- Inzoomen: 100% (1) tot 300% (3). De letters worden groter, de tekst loopt door op de volgende regel ----------
+    let tekstZoom = 1;
+
+    function zetZoom(z) {
+      const nieuw = Math.min(3, Math.max(1, z));
+      if (Math.abs(nieuw - tekstZoom) < 0.001) return;
+      // Onthoud waar je was in de tekst, zodat je na het zoomen niet ineens ergens anders staat
+      const verhouding = tekstvak.scrollTop / (tekstvak.scrollHeight || 1);
+      tekstZoom = nieuw;
+      tekstdoos.style.setProperty("--zoom", String(nieuw));
+      const procent = Math.round(nieuw * 100);
+      zoomSchuif.value = procent;
+      zoomSchuif.setAttribute("aria-valuetext", procent + "%");
+      tekstvak.scrollTop = verhouding * tekstvak.scrollHeight;
+    }
+
+    // Balk (laptop)
+    zoomSchuif.addEventListener("input", function () {
+      zetZoom(Number(zoomSchuif.value) / 100);
+    });
+
+    // Knijpen met twee vingers (telefoon en iPad)
+    let knijp = null;
+    function vingerAfstand(aanrakingen) {
+      return Math.hypot(
+        aanrakingen[0].clientX - aanrakingen[1].clientX,
+        aanrakingen[0].clientY - aanrakingen[1].clientY
+      );
+    }
+    tekstdoos.addEventListener("touchstart", function (e) {
+      if (!tekstVolOpen()) return;
+      if (e.touches.length === 2) {
+        knijp = { afstand: vingerAfstand(e.touches), zoom: tekstZoom };
+      }
+    }, { passive: true });
+    tekstdoos.addEventListener("touchmove", function (e) {
+      if (!tekstVolOpen() || !knijp || e.touches.length !== 2) return;
+      if (e.cancelable) e.preventDefault();      // zo zoomt niet de hele pagina mee
+      const afstand = vingerAfstand(e.touches);
+      if (knijp.afstand > 0) zetZoom(knijp.zoom * (afstand / knijp.afstand));
+    }, { passive: false });
+    function knijpKlaar(e) {
+      if (e.touches.length < 2) knijp = null;
+    }
+    tekstdoos.addEventListener("touchend", knijpKlaar, { passive: true });
+    tekstdoos.addEventListener("touchcancel", knijpKlaar, { passive: true });
+
+    // Safari (iPhone/iPad/Mac) stuurt voor knijpen ook "gesture"-events: die houden de hele pagina vast,
+    // en op een Mac-trackpad gebruiken we ze om in te zoomen
+    let gebaarStart = 1;
+    tekstdoos.addEventListener("gesturestart", function (e) {
+      if (!tekstVolOpen()) return;
+      e.preventDefault();
+      gebaarStart = tekstZoom;
+    });
+    tekstdoos.addEventListener("gesturechange", function (e) {
+      if (!tekstVolOpen()) return;
+      e.preventDefault();
+      if (!knijp) zetZoom(gebaarStart * e.scale);
+    });
+    tekstdoos.addEventListener("gestureend", function (e) {
+      if (tekstVolOpen()) e.preventDefault();
+    });
+
+    // Ctrl + muiswiel of knijpen op een trackpad (Chrome, Edge, Firefox)
+    tekstdoos.addEventListener("wheel", function (e) {
+      if (!tekstVolOpen() || !e.ctrlKey) return;
+      e.preventDefault();
+      const d = Math.max(-25, Math.min(25, e.deltaY));
+      zetZoom(tekstZoom * Math.exp(-d * 0.01));
+    }, { passive: false });
+
     function openTekstVol() {
       tekstdoos.classList.add("vol");
       document.body.classList.add("tekst-vol");
       tekstVolKnop.setAttribute("aria-label", "Tekstvak weer klein maken");
       tekstVolKnop.title = "Tekstvak weer klein maken";
+      zetBewerken(false);          // je begint met een vergrendelde tekst: eerst op het potlood drukken om te typen
       pasTekstHoogte();
       // Op laptop, tablet en Android gaat de browser er ook echt schermvullend bij
       if (fsMogelijk && !fsElement()) {
@@ -1251,6 +1610,10 @@ vorigeNieuw = stand.nieuw;
       tekstdoos.style.top = "";
       tekstdoos.style.height = "";
       tekstdoos.style.bottom = "";
+      tekstvak.readOnly = false;   // in het gewone tekstvak kun je altijd typen
+      bewerkKnop.setAttribute("aria-pressed", "false");
+      knijp = null;
+      zetZoom(1);
       tekstVolKnop.setAttribute("aria-label", "Tekstvak over het hele scherm");
       tekstVolKnop.title = "Tekstvak over het hele scherm";
       if (mochtUit && fsElement()) verlaatFs();
@@ -1261,7 +1624,9 @@ vorigeNieuw = stand.nieuw;
     });
 
     document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && tekstVolOpen()) sluitTekstVol();
+      if (e.key !== "Escape") return;
+      if (tekstVolOpen()) sluitTekstVol();
+      else if (document.body.classList.contains("bieb-open")) sluitBieb();
     });
 
     // Eén plek die reageert als het volledige scherm aan of uit gaat
@@ -1272,23 +1637,506 @@ vorigeNieuw = stand.nieuw;
     }
     document.addEventListener("fullscreenchange", fsGewijzigd);
     document.addEventListener("webkitfullscreenchange", fsGewijzigd);
-document
-  .getElementById("kopieerKnop")
-  .addEventListener("click", async function () {
 
-    try {
-      await navigator.clipboard.writeText(tekstvak.value);
+    // ---------- Alle tekst kopiëren ----------
+    const kopieerKnop = document.getElementById("kopieerKnop");
+    let kopieerTimer = null;
 
-      toonMelding("Tekst gekopieerd!");
-
-    } catch (fout) {
-
-      toonMelding("Kopiëren mislukt.");
-
+    function kopieerTekst(tekst) {
+      if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(tekst);
+      }
+      // Oudere browsers of een pagina zonder https: selecteer alles en kopieer
+      return new Promise(function (ok, fout) {
+        const van = tekstvak.selectionStart, tot = tekstvak.selectionEnd;
+        tekstvak.focus();
+        tekstvak.setSelectionRange(0, tekstvak.value.length);
+        let gelukt = false;
+        try { gelukt = document.execCommand("copy"); } catch (e) { /* niet erg */ }
+        tekstvak.setSelectionRange(van, tot);
+        if (gelukt) ok(); else fout();
+      });
     }
 
-  });
+    kopieerKnop.addEventListener("click", function () {
+      const tekst = tekstvak.value;
+      if (tekst === "") {
+        if (!tekstVolOpen()) toonMelding("Er staat nog niets in het tekstvak.");
+        return;
+      }
+      kopieerTekst(tekst).then(function () {
+        kopieerKnop.classList.add("gelukt");
+        clearTimeout(kopieerTimer);
+        kopieerTimer = setTimeout(function () { kopieerKnop.classList.remove("gelukt"); }, 1600);
+        // In het witte grote tekstvak is de melding onzichtbaar, daar volstaat het vinkje
+        if (!tekstVolOpen()) toonMelding("Tekst gekopieerd!");
+      }).catch(function () {
+        if (!tekstVolOpen()) toonMelding("Kopiëren mislukt. Selecteer de tekst en kopieer hem zelf.");
+      });
+    });
+
+    // =====================================================================
+    //  AKKOORDENBIBLIOTHEEK
+    // =====================================================================
+    //
+    // Hoe komen alle akkoorden in de vakjes? Op drie manieren, in deze volgorde:
+    //
+    //  1. VINGERZETTINGEN hieronder: jouw eigen lijst. Een akkoord dat hier staat, wint altijd.
+    //     Schrijf de zes snaren van de dikke E (laag) naar de dunne e (hoog):
+    //        x = niet spelen, 0 = open snaar, een cijfer = fret.
+    //     Voorbeeld C = "x32010". Zit er een fret boven 9 bij? Zet er streepjes tussen: "x-10-12-12-12-10".
+    //     Je mag kruisen of mollen gebruiken in de naam: "C#m7" en "Dbm7" zijn hetzelfde akkoord.
+    //
+    //  2. VORMEN: één vaste vorm per soort akkoord (majeur, mineur, 7, ...), met de grondtoon op de
+    //     dikke E-snaar ("e") of op de A-snaar ("a"). Een vorm schuift gewoon over de hals, dus één vorm
+    //     levert direct alle 12 akkoorden op (de barré-akkoorden). Per akkoord kiest de code de vorm die
+    //     het laagst op de hals ligt. Een nieuwe soort akkoord toevoegen = één regel bij VORMEN en
+    //     één regel bij KWALITEITEN.
+    //
+    //  3. Staat een akkoord nergens? Dan blijft het vakje leeg (stippellijn), tot jij het invult bij 1.
+
+    const VINGERZETTINGEN = {
+      // Open akkoorden (makkelijker dan de barré-vorm)
+      "C": "x32010",   "D": "xx0232",   "G": "320003",
+      "C7": "x32310",  "D7": "xx0212",  "E7": "020100", "G7": "320001", "A7": "x02020", "B7": "x21202",
+      "Cmaj7": "x32000", "Dmaj7": "xx0222", "Emaj7": "021100", "Fmaj7": "xx3210", "Gmaj7": "320002", "Amaj7": "x02120",
+      "Dm": "xx0231",  "Dm7": "xx0211", "Am7": "x02010",
+      "Dsus2": "xx0230", "Dsus4": "xx0233", "Asus2": "x02200", "Asus4": "x02230", "Esus4": "022200",
+      "Cadd9": "x32030", "G6": "320000"
+      // Eigen akkoord toevoegen? Zet hier een regel bij, bijvoorbeeld:  "C#dim7": "x4535x",
+    };
+
+    // De vormen. Elk getal is "hoeveel frets boven de grondtoon" en null = niet spelen.
+    // Vorm "e": grondtoon op de dikke E-snaar. Vorm "a": grondtoon op de A-snaar (de E-snaar blijft dan stil).
+    const VORMEN = {
+      "":      { e: [0, 2, 2, 1, 0, 0],       a: [null, 0, 2, 2, 2, 0] },
+      "m":     { e: [0, 2, 2, 0, 0, 0],       a: [null, 0, 2, 2, 1, 0] },
+      "7":     { e: [0, 2, 0, 1, 0, 0],       a: [null, 0, 2, 0, 2, 0] },
+      "m7":    { e: [0, 2, 0, 0, 0, 0],       a: [null, 0, 2, 0, 1, 0] },
+      "maj7":  { e: [0, 2, 1, 1, 0, 0],       a: [null, 0, 2, 1, 2, 0] },
+      "sus2":  { e: [0, 2, 4, 4, 0, 0],       a: [null, 0, 2, 2, 0, 0] },
+      "sus4":  { e: [0, 2, 2, 2, 0, 0],       a: [null, 0, 2, 2, 3, 0] },
+      "6":     { e: [0, 2, 2, 1, 2, 0],       a: [null, 0, 2, 2, 2, 2] },
+      "m6":    { e: [0, 2, 2, 0, 2, 0],       a: [null, 0, 2, 2, 1, 2] },
+      "9":     { e: [0, 2, 0, 1, 0, 2],       a: [null, 0, 2, 4, 2, 3] },
+      "add9":  { e: [0, 2, 2, 1, 0, 2],       a: [null, 0, 2, 4, 2, 0] },
+      "dim":   {                              a: [null, 0, 1, 2, 1, null] },
+      "m7b5":  {                              a: [null, 0, 1, 0, 1, null] },
+      "aug":   { e: [0, 3, 2, 1, 1, 0],       a: [null, 0, 3, 2, 2, 1] },
+      "7sus4": { e: [0, 2, 0, 2, 0, 0],       a: [null, 0, 2, 0, 3, 0] }
+    };
+
+    // De rijen op de pagina. Soorten zonder vorm (de laatste vier) blijven nog leeg.
+    const KWALITEITEN = [
+      { sfx: "",       titel: "Majeur" },
+      { sfx: "m",      titel: "Mineur (m)" },
+      { sfx: "7",      titel: "Dominant 7 (7)" },
+      { sfx: "m7",     titel: "Mineur 7 (m7)" },
+      { sfx: "maj7",   titel: "Majeur 7 (maj7)" },
+      { sfx: "sus2",   titel: "Sus2" },
+      { sfx: "sus4",   titel: "Sus4" },
+      { sfx: "6",      titel: "6" },
+      { sfx: "m6",     titel: "Mineur 6 (m6)" },
+      { sfx: "9",      titel: "9" },
+      { sfx: "add9",   titel: "Add9" },
+      { sfx: "dim",    titel: "Verminderd (dim)" },
+      { sfx: "m7b5",   titel: "Halfverminderd (m7b5)" },
+      { sfx: "aug",    titel: "Overmatig (aug)" },
+      { sfx: "7sus4",  titel: "7sus4" },
+      { sfx: "dim7",   titel: "Dim7" },
+      { sfx: "maj9",   titel: "Maj9" },
+      { sfx: "m9",     titel: "Mineur 9 (m9)" },
+      { sfx: "m(maj7)", titel: "Mineur majeur 7 (m(maj7))" }
+    ];
+
+    // Naam van de toonhoogte met mol, voor onder de grote naam (leeg als hij geen kruis of mol heeft)
+    const ALT_WORTELS = ["", "Db", "", "Eb", "", "", "Gb", "", "Ab", "", "Bb", ""];
+
+    // "Dbm7" -> "C#m7", zodat kruisen en mollen in VINGERZETTINGEN door elkaar mogen
+    function sleutel(naam) {
+      const m = /^([A-G])([#b]?)(.*)$/.exec(naam);
+      if (!m) return naam;
+      const nummer = (basis[m[1]] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0) + 12) % 12;
+      return noten[nummer] + m[3];
+    }
+
+    // "x32010" -> [null,3,2,0,1,0]
+    function leesVingers(tekst) {
+      const metScheiding = /[-,\s]/.test(tekst);
+      const delen = metScheiding ? tekst.split(/[-,\s]+/) : tekst.split("");
+      return delen.map(function (d) {
+        if (d === "x" || d === "X") return null;
+        return parseInt(d, metScheiding ? 10 : 36);       // zonder streepjes mag a = 10, b = 11, ...
+      });
+    }
+
+    // Geeft { vingers: [6 getallen of null], barre: {...} of null }, of null als het akkoord onbekend is
+    function zoekAkkoord(wortel, sfx, eigen) {
+      const eigenTekst = eigen[noten[wortel] + sfx];
+      if (eigenTekst) {
+        const v = leesVingers(eigenTekst);
+        if (v.length === 6) return { vingers: v, barre: null };
+      }
+
+      const vorm = VORMEN[sfx];
+      if (!vorm) return null;
+
+      // Kies de vorm die het laagst op de hals ligt (E-snaar = toon 4, A-snaar = toon 9)
+      let kies = null;
+      [["e", 4], ["a", 9]].forEach(function (k) {
+        const rel = vorm[k[0]];
+        if (!rel) return;
+        const pos = (((wortel - k[1]) % 12) + 12) % 12;
+        if (!kies || pos < kies.pos) kies = { pos: pos, rel: rel };
+      });
+      if (!kies) return null;
+
+      const vingers = kies.rel.map(function (r) { return r === null ? null : r + kies.pos; });
+
+      // Zit de vorm hoger dan de open snaren? Dan ligt er een vinger als "barré" over de hals
+      let barre = null;
+      if (kies.pos > 0) {
+        const nullen = [];
+        kies.rel.forEach(function (r, i) { if (r === 0) nullen.push(i); });
+        if (nullen.length >= 2) barre = { fret: kies.pos, van: nullen[0], tot: nullen[nullen.length - 1] };
+      }
+      return { vingers: vingers, barre: barre };
+    }
+
+    // Tekent het akkoorddiagram als SVG. Zonder akkoord: een leeg raster.
+    function tekenAkkoord(akkoord) {
+      const X0 = 16, DX = 8, Y0 = 16, DY = 10, RIJEN = 5;
+      const breedte = 5 * DX;
+      const vingers = akkoord ? akkoord.vingers : null;
+      const barre = akkoord ? akkoord.barre : null;
+
+      // Past alles op de eerste vijf frets? Anders beginnen we bij de laagste fret en zetten het nummer ernaast
+      const gedrukt = vingers ? vingers.filter(function (f) { return f !== null && f > 0; }) : [];
+      let beginFret = 1;
+      if (gedrukt.length && Math.max.apply(null, gedrukt) > RIJEN) beginFret = Math.min.apply(null, gedrukt);
+
+      let s = '<svg viewBox="0 0 68 76" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">';
+      s += '<g stroke="currentColor" stroke-width="1" stroke-linecap="round" fill="none" opacity="' + (vingers ? 0.85 : 0.3) + '">';
+      for (let i = 0; i < 6; i++) {
+        s += '<line x1="' + (X0 + i * DX) + '" y1="' + Y0 + '" x2="' + (X0 + i * DX) + '" y2="' + (Y0 + RIJEN * DY) + '"/>';
+      }
+      for (let j = 0; j <= RIJEN; j++) {
+        s += '<line x1="' + X0 + '" y1="' + (Y0 + j * DY) + '" x2="' + (X0 + breedte) + '" y2="' + (Y0 + j * DY) + '"/>';
+      }
+      s += '</g>';
+      if (!vingers) return s + '</svg>';
+
+      // Zadel (dikke streep bovenaan) of het fretnummer ernaast
+      if (beginFret === 1) {
+        s += '<rect x="' + (X0 - 0.5) + '" y="' + (Y0 - 2.2) + '" width="' + (breedte + 1) + '" height="3" rx="1" fill="currentColor"/>';
+      } else {
+        s += '<text x="' + (X0 - 6) + '" y="' + (Y0 + DY / 2 + 3) + '" text-anchor="end" font-size="9" font-weight="800" fill="currentColor" font-family="Sora, Arial, sans-serif">' + beginFret + '</text>';
+      }
+
+      // Boven het zadel: kruisje (niet spelen) of rondje (open snaar)
+      vingers.forEach(function (f, i) {
+        const x = X0 + i * DX;
+        if (f === null) {
+          s += '<path d="M' + (x - 2.4) + ' 5.6L' + (x + 2.4) + ' 10.4M' + (x + 2.4) + ' 5.6L' + (x - 2.4) + ' 10.4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" fill="none"/>';
+        } else if (f === 0) {
+          s += '<circle cx="' + x + '" cy="8" r="2.6" stroke="currentColor" stroke-width="1.2" fill="none"/>';
+        }
+      });
+
+      // Barré: één strook over meerdere snaren
+      if (barre && barre.fret >= beginFret && barre.fret < beginFret + RIJEN) {
+        const cy = Y0 + (barre.fret - beginFret) * DY + DY / 2;
+        s += '<rect x="' + (X0 + barre.van * DX - 3.6) + '" y="' + (cy - 3.4) + '" width="' + ((barre.tot - barre.van) * DX + 7.2) + '" height="6.8" rx="3.4" fill="currentColor"/>';
+      }
+
+      // Vingers
+      vingers.forEach(function (f, i) {
+        if (f === null || f <= 0 || f < beginFret || f >= beginFret + RIJEN) return;
+        if (barre && f === barre.fret && i >= barre.van && i <= barre.tot) return;   // zit al in de barré-strook
+        const cy = Y0 + (f - beginFret) * DY + DY / 2;
+        s += '<circle cx="' + (X0 + i * DX) + '" cy="' + cy + '" r="3.6" fill="currentColor"/>';
+      });
+
+      return s + '</svg>';
+    }
+
+    // Bouwt alle vakjes. Gebeurt één keer, pas als je de bibliotheek opent.
+    let biebGebouwd = false;
+    function bouwBieb() {
+      if (biebGebouwd) return;
+      biebGebouwd = true;
+
+      const eigen = {};
+      Object.keys(VINGERZETTINGEN).forEach(function (naam) { eigen[sleutel(naam)] = VINGERZETTINGEN[naam]; });
+
+      let html = "";
+      KWALITEITEN.forEach(function (q) {
+        html += '<h2 class="ak-titel">' + q.titel + '</h2><div class="ak-rij" role="list">';
+        for (let w = 0; w < 12; w++) {
+          const naam = noten[w] + q.sfx;
+          const alt = ALT_WORTELS[w] ? ALT_WORTELS[w] + q.sfx : "";
+          const akkoord = zoekAkkoord(w, q.sfx, eigen);
+          html += '<div class="akkoord-blok' + (akkoord ? "" : " leeg") + '" role="listitem" title="' +
+                  (akkoord ? naam : naam + ": nog niet ingevuld") + '">' +
+                  '<span class="ak-naam">' + naam + '</span>' +
+                  '<span class="ak-alt">' + alt + '</span>' +
+                  tekenAkkoord(akkoord) +
+                  '</div>';
+        }
+        html += '</div>';
+      });
+      document.getElementById("biebInhoud").innerHTML = html;
+    }
+
+    // ---------- Naar de bibliotheek en terug ----------
+    // De bibliotheek is "pagina" #akkoorden: de terugknop van je browser of telefoon werkt dus gewoon.
+    let biebViaKnop = false;
+
+    function pasPaginaAan() {
+      const open = location.hash === "#akkoorden";
+      document.body.classList.toggle("bieb-open", open);
+      if (open) bouwBieb();
+      const titel = open ? "Terug naar KeyChanger" : "Alles terugzetten";
+      logo.title = titel;
+      logo.setAttribute("aria-label", "KeyChanger, " + (open ? "terug naar de gewone pagina" : "alles terugzetten"));
+      window.scrollTo(0, 0);
+    }
+
+    function openBieb() {
+      biebViaKnop = true;
+      location.hash = "akkoorden";           // zet de pagina om via "hashchange"
+    }
+
+    function sluitBieb() {
+      if (biebViaKnop) {
+        biebViaKnop = false;
+        history.back();                      // terug naar de gewone pagina, de tekst blijft staan
+      } else {
+        // Direct op de bibliotheek binnengekomen (bijvoorbeeld via een link): er is niets om naar terug te gaan
+        try { history.replaceState(null, "", location.pathname + location.search); } catch (fout) { location.hash = ""; }
+        pasPaginaAan();
+      }
+    }
+
+    document.getElementById("biebKnop").addEventListener("click", openBieb);
+    window.addEventListener("hashchange", pasPaginaAan);
+
+
+    // =====================================================================
+    // ACCOUNTS, ONLINE OPSLAAN EN OPGESLAGEN TEKSTEN
+    // =====================================================================
+    // Maak een gratis project op https://supabase.com en vul hier Project URL
+    // en anon/public key in. De SQL staat in database.sql naast dit bestand.
+    const SUPABASE_URL = "https://umgzbiflchroucznaqxb.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_6HXB5tRAx1XZjIuBzagsww_9DAb__ze";
+    let supabaseClient = null;
+    let huidigeGebruiker = null;
+
+    const authStatus = document.getElementById("authStatus");
+    const authForm = document.getElementById("authForm");
+    const signedIn = document.getElementById("signedIn");
+
+    function statusAccount(tekst) { authStatus.textContent = tekst; }
+
+    if (window.supabase && SUPABASE_URL.startsWith("https://") &&
+        !SUPABASE_URL.includes("VUL_HIER") && !SUPABASE_ANON_KEY.includes("VUL_HIER")) {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+      });
+      supabaseClient.auth.getSession().then(({ data, error }) => {
+        if (error) statusAccount("Sessie controleren mislukt: " + error.message);
+        verwerkSessie(data && data.session, "INITIAL_SESSION");
+      }).catch(error => statusAccount("Inloggen is tijdelijk niet beschikbaar: " + error.message));
+      supabaseClient.auth.onAuthStateChange((event, session) => verwerkSessie(session, event));
+    } else {
+      statusAccount("De accountserver kan niet worden bereikt of de Supabase-projectgegevens ontbreken. Controleer de project-URL en publieke anon/publishable key.");
+    }
+
+    function openGewonePagina() {
+      document.body.classList.remove("start", "login-open");
+      home.hidden = true;
+      document.getElementById("loginPage").hidden = true;
+    }
+
+    function toonStartscherm() {
+      document.body.classList.add("start");
+      document.body.classList.remove("login-open");
+      home.hidden = false;
+      home.classList.remove("weg");
+      document.getElementById("loginPage").hidden = true;
+    }
+
+    function openInlogPagina() {
+      document.body.classList.remove("start");
+      document.body.classList.add("login-open");
+      home.hidden = true;
+      document.getElementById("loginPage").hidden = false;
+      document.getElementById("authEmail").focus();
+    }
+
+    function verwerkSessie(session, eventName) {
+      huidigeGebruiker = session && session.user ? session.user : null;
+      authForm.hidden = !!huidigeGebruiker;
+      signedIn.hidden = !huidigeGebruiker;
+      document.getElementById("logoutAppBtn").hidden = !huidigeGebruiker;
+      document.getElementById("userEmail").textContent = huidigeGebruiker ? huidigeGebruiker.email : "";
+      if (huidigeGebruiker) {
+        statusAccount("Ingelogd. Je teksten worden aan dit account gekoppeld.");
+        openGewonePagina();
+        if (location.hash === "#opgeslagen") laadOpgeslagenTeksten();
+      } else {
+        if (supabaseClient) statusAccount("Log in of maak een account om verder te gaan.");
+        // Alleen bij expliciet uitloggen terug naar het startscherm.
+        if (eventName === "SIGNED_OUT") toonStartscherm();
+      }
+    }
+
+    // De gebruiker ziet eerst het logo. Een bestaande geldige sessie gaat direct door.
+    const home = document.getElementById("home");
+    document.getElementById("startLogo").addEventListener("click", openInlogPagina);
+    document.getElementById("loginBack").addEventListener("click", toonStartscherm);
+    document.getElementById("loginBackText").addEventListener("click", toonStartscherm);
+
+    async function accountActie(actie) {
+      if (!supabaseClient) { statusAccount("Koppel eerst Supabase. Zie database.sql."); return; }
+      const email = document.getElementById("authEmail").value.trim();
+      const password = document.getElementById("authPassword").value;
+      if (!email || !password) { statusAccount("Vul je e-mailadres en wachtwoord in."); return; }
+      statusAccount("Even bezig...");
+      try {
+        const result = actie === "signup"
+          ? await supabaseClient.auth.signUp({ email, password })
+          : await supabaseClient.auth.signInWithPassword({ email, password });
+        if (result.error) statusAccount("Inloggen/account maken mislukt: " + result.error.message);
+        else if (actie === "signup" && !result.data.session)
+          statusAccount("Account aangemaakt. Bevestig eerst je e-mailadres via de e-mail. Log daarna hier in.");
+        else if (result.data.session) {
+          statusAccount("Gelukt! Je blijft op dit apparaat ingelogd.");
+          openGewonePagina();
+        }
+      } catch (error) {
+        statusAccount("Er ging iets mis. Controleer je internetverbinding en probeer opnieuw.");
+        console.error("Accountactie:", error);
+      }
+    }
+
+    document.getElementById("signInBtn").addEventListener("click", () => accountActie("signin"));
+    document.getElementById("signUpBtn").addEventListener("click", () => accountActie("signup"));
+    async function uitloggen() {
+      if (supabaseClient) {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) toonMelding("Uitloggen mislukt: " + error.message);
+      }
+    }
+    document.getElementById("signOutBtn").addEventListener("click", uitloggen);
+    document.getElementById("logoutAppBtn").addEventListener("click", uitloggen);
+
+    async function slaTekstOp() {
+      const inhoud = tekstvak.value.trim();
+      if (!inhoud) { toonMelding("Er staat nog geen tekst in het tekstvak."); return; }
+      if (!supabaseClient || !huidigeGebruiker) {
+        toonMelding("Log eerst in om je tekst veilig online op te slaan.");
+        return;
+      }
+      const naam = prompt("Geef deze tekst een naam:", "Mijn akkoorden");
+      if (naam === null) return;
+      const { error } = await supabaseClient.from("saved_texts").insert({
+        user_id: huidigeGebruiker.id,
+        title: naam.trim() || "Naamloze tekst",
+        content: inhoud
+      });
+      if (error) { toonMelding("Opslaan mislukt: " + error.message); return; }
+      toonMelding("Tekst opgeslagen!");
+      if (location.hash === "#opgeslagen") laadOpgeslagenTeksten();
+    }
+    document.getElementById("saveTextBtn").addEventListener("click", slaTekstOp);
+
+    async function laadOpgeslagenTeksten() {
+      const lijst = document.getElementById("savedList");
+      if (!supabaseClient || !huidigeGebruiker) {
+        lijst.innerHTML = '<p class="saved-empty">Log in om je persoonlijke opgeslagen teksten te bekijken.</p>';
+        return;
+      }
+      lijst.innerHTML = '<p class="saved-empty">Opgeslagen teksten laden...</p>';
+      const { data, error } = await supabaseClient.from("saved_texts")
+        .select("id,title,content,created_at").order("created_at", { ascending: false });
+      if (error) {
+        lijst.textContent = "Kon teksten niet laden: " + error.message;
+        return;
+      }
+      if (!data || !data.length) {
+        lijst.innerHTML = '<p class="saved-empty">Je hebt nog geen teksten opgeslagen. Ga terug en druk op het opslaan-icoon.</p>';
+        return;
+      }
+      lijst.innerHTML = "";
+      data.forEach(item => {
+        const kaart = document.createElement("article");
+        kaart.className = "saved-card glass";
+        const titel = document.createElement("h3");
+        titel.textContent = item.title;
+        const datum = document.createElement("small");
+        datum.textContent = new Date(item.created_at).toLocaleDateString("nl-NL");
+        const preview = document.createElement("p");
+        preview.textContent = item.content;
+        const acties = document.createElement("div");
+        acties.className = "saved-actions";
+        const open = document.createElement("button");
+        open.type = "button"; open.textContent = "Openen";
+        open.addEventListener("click", () => {
+          tekstvak.value = item.content;
+          location.hash = "";
+          window.scrollTo(0, 0);
+          toonMelding("Tekst teruggezet in het tekstvak.");
+        });
+        const verwijderen = document.createElement("button");
+        verwijderen.type = "button"; verwijderen.textContent = "Verwijderen";
+        verwijderen.addEventListener("click", async () => {
+          if (!confirm("Deze opgeslagen tekst verwijderen?")) return;
+          const { error: deleteError } = await supabaseClient.from("saved_texts").delete().eq("id", item.id);
+          if (deleteError) toonMelding("Verwijderen mislukt: " + deleteError.message);
+          else laadOpgeslagenTeksten();
+        });
+        acties.append(open, verwijderen);
+        kaart.append(titel, datum, preview, acties);
+        lijst.appendChild(kaart);
+      });
+    }
+
+    // De bibliotheek en de opgeslagen teksten zijn aparte interne pagina's.
+    const originelePasPaginaAan = pasPaginaAan;
+    pasPaginaAan = function () {
+      const hash = location.hash;
+      if (hash === "#opgeslagen") {
+        document.body.classList.remove("bieb-open");
+        document.body.classList.add("saved-open");
+        logo.title = "Terug naar KeyChanger";
+        logo.setAttribute("aria-label", "KeyChanger, terug naar de gewone pagina");
+        laadOpgeslagenTeksten();
+        window.scrollTo(0, 0);
+      } else {
+        document.body.classList.remove("saved-open");
+        originelePasPaginaAan();
+      }
+    };
+    window.removeEventListener("hashchange", originelePasPaginaAan);
+    window.addEventListener("hashchange", pasPaginaAan);
+    document.getElementById("savedPageBtn").addEventListener("click", () => { location.hash = "opgeslagen"; });
+    // Op het logo klikken brengt je vanaf beide subpagina's terug naar de hoofdpagina.
+    logo.addEventListener("click", function (event) {
+      if (location.hash === "#akkoorden" || location.hash === "#opgeslagen") {
+        event.preventDefault();
+        location.hash = "";
+      }
+    });
+
+    // Installeerbare app: service worker werkt alleen via HTTPS of localhost.
+    if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(err => console.warn("Service worker:", err)));
+    }
+
     toon();
+    pasPaginaAan();
   </script>
 </body>
 </html>
+
